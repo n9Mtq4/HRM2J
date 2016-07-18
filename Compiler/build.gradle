@@ -1,0 +1,37 @@
+group 'HRM2J'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'kotlin'
+
+sourceCompatibility = 1.7
+
+repositories {
+    mavenCentral()
+    maven {
+        url "http://dl.bintray.com/kotlin/kotlin-eap-1.1"
+    }
+}
+
+buildscript {
+    repositories {
+        maven {
+            url "http://dl.bintray.com/kotlin/kotlin-eap-1.1"
+        }
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compile project(":Runtime")
+    compile files("../libs/KotlinExtLib.jar")
+}
+
+sourceSets {
+    main.java.srcDirs += 'src/main/kotlin'
+}
