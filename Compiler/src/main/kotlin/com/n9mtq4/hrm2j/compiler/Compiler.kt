@@ -7,7 +7,7 @@ package com.n9mtq4.hrm2j.compiler
  *
  * @author Will "n9Mtq4" Bresnahan
  */
-class Compiler(val text: String, val className: String, val packageName: String, val inboxValues: IntArray, val floorSize: Int, val floorValues: IntArray, val outboxSize: Int, val stackTrace: Boolean = false) {
+open class Compiler(val text: String, val className: String, val packageName: String, val inboxValues: IntArray, val floorSize: Int, val floorValues: IntArray, val outboxSize: Int, val stackTrace: Boolean = false, val import: Boolean = true, val inner: Boolean = false) {
 	
 	private var firstFunc = ""
 	private var lastFunc = ""
@@ -24,9 +24,9 @@ class Compiler(val text: String, val className: String, val packageName: String,
 	
 	fun generateHeader() {
 		
-		gl("package $packageName;")
-		gl("import com.n9mtq4.hrm2j.runtime.*;")
-		gl("public class $className extends HrmCpu {")
+		if (!packageName.isBlank()) gl("package $packageName;")
+		if (import) gl("import com.n9mtq4.hrm2j.runtime.*;")
+		gl("public ${if (inner) "static" else ""} class $className extends HrmCpu {")
 		gl("public $className(int[] inboxValues, int floorSize, int[] floorValues, int outboxSize) {")
 		gl("super(inboxValues, floorSize, floorValues, outboxSize);")
 		gl("}")

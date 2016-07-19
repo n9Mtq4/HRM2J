@@ -1,5 +1,6 @@
 /*
 * THIS COMMENT WAS PLACED BY A HUMAN, NOT THE COMPILER
+* THIS CODE WAS ALSO REFORMATTED INTO A SOMEWHAT READABLE FORMAT
 * 
 * I did not write the source code for this hrm program. That
 * code can be found here.
@@ -21,7 +22,7 @@
 * ```
 * 
 * */
-package com.n9mtq4.hrm2j.runtime;
+//package com.n9mtq4.hrm2j.runtime;
 public class Level41 extends HrmCpu {
 	public Level41(int[] inboxValues, int floorSize, int[] floorValues, int outboxSize) {
 		super(inboxValues, floorSize, floorValues, outboxSize);
