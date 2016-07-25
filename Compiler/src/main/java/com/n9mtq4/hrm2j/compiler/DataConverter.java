@@ -30,7 +30,7 @@ public class DataConverter {
 	}
 	
 	public static boolean isChar(final int value) {
-		return (value & CHAR_MASK) != 0 && (((value & (~CHAR_MASK)) >> 6) ^ 0b01) == 0;
+		return (value & CHAR_MASK) != 0 && (((value & (~CHAR_MASK)) >> 6) ^ 1) == 0;
 	}
 	
 }

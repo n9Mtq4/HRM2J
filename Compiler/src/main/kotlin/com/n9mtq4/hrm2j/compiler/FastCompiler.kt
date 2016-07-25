@@ -13,6 +13,7 @@ private int[] floor;
 private int[] outbox;
 private int outboxIndex = 0;
 private int hand = 0;
+public Throwable stackTrace = null;
 """
 private val dataConverter = """
 private static final int CHAR_MASK = 1 << 30;
@@ -96,6 +97,7 @@ fun <T> fastCompile(program: Program, className: String, packageName: String, in
 		gl("func_${program.sections[0].label}();")
 		gl("} catch (Throwable e) {")
 		if (stackTrace) gl("e.printStackTrace();")
+		if (stackTrace) gl("this.stackTrace = e;")
 		gl("return toString();")
 		gl("}")
 		gl("return toString();")
