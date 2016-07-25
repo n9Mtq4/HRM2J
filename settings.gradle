@@ -1,5 +1,3 @@
 rootProject.name = 'HRM2J'
-include 'Runtime'
 include 'Compiler'
 include 'Gui'
-

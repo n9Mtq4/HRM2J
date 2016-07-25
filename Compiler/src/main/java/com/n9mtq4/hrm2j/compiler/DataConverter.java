@@ -7,10 +7,10 @@ package com.n9mtq4.hrm2j.compiler;
  */
 public class DataConverter {
 	
-	private static final int CHAR_MASK = 0b10000000000; // TODO: can add zeros to increase value
+	private static final int CHAR_MASK = 1 << 30;
 	
 	public static int toInt(final int value) {
-		return (value & (~CHAR_MASK));
+		return value;
 	}
 	
 	public static char toChar(final int value) {
@@ -26,11 +26,11 @@ public class DataConverter {
 	}
 	
 	public static boolean isNum(final int value) {
-		return (value & CHAR_MASK) == 0;
+		return !isChar(value);
 	}
 	
 	public static boolean isChar(final int value) {
-		return (value & CHAR_MASK) != 0;
+		return (value & CHAR_MASK) != 0 && (((value & (~CHAR_MASK)) >> 6) ^ 0b01) == 0;
 	}
 	
 }
