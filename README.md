@@ -23,6 +23,15 @@ Benchmark was performed with [this code (for level 41)](https://github.com/atesg
 being measured on 1000 runs. The measure was in running only, parsing the input data. The input data consisted of 61 characters:
 1,2,3,4,0,4,3,2,1,0,1,3,3,2,2,1,4,0,4,3,2,1,4,3,2,1,4,3,2,1,0,2,1,3,4,7,8,3,2,1,4,6,0,2,7,3,5,1,2,3,0,4,3,1,2,4,2,3,1,4,0
 
+##The GUI
+The gui is being worked on, so you don't have to actually code in order to run a program.
+It doesn't work yet, but there are big plans for it.
+
+##Planned:
+![planned gui](readme_data/planned.png)
+##Currnet:
+![current gui](readme_data/current.png)
+
 ##The future
 There are some plans on what this project is going to turn into.
 1. Expanding the HRM assembly language

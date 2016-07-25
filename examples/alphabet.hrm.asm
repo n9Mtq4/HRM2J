@@ -11,4 +11,4 @@ loop:				 -- the loop: add one to the letter, output, check if done
 	jumpeq 0 end		 -- 2/2 if the letter is z, goto the end
 	jump loop		 -- repeat this process 
 end:					 -- the end: the place to goto if done
-	-- crash			 -- comment/uncomment this to get a stacktrace of the java when the program finishes
+	crash			 -- comment/uncomment this to get a stacktrace of the java when the program finishes
