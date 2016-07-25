@@ -32,7 +32,8 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     compile files("../libs/KotlinExtLib.jar")
     compile project(":Compiler")
-    compile project(":Runtime")
+    compile 'org.swinglabs:swingx:1.6.1'
+    compile 'com.fifesoft:rsyntaxtextarea:2.5.8'
 }
 
 sourceSets {
