@@ -51,7 +51,6 @@ class HrmGui {
 		// code column
 		this.codeArea = RSyntaxTextArea().apply {
 			syntaxEditingStyle = SyntaxConstants.SYNTAX_STYLE_LUA // HRM more closely matches lua than assembly
-			isCodeFoldingEnabled = true
 			tabSize = 4
 			columns = COLUMN_COUNT
 		}
