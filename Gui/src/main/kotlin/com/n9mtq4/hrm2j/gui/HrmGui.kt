@@ -143,19 +143,25 @@ class HrmGui {
 		val out = method.invoke(instance) as String
 		val field = clazz.getDeclaredField("stackTrace")
 		
-		val stackTraceEx = field.get(instance) as Throwable
-		
 		output.append(out)
-		stackTrace.append(stackTraceEx.toText())
+		
+		field.get(instance)?.let {
+			it as Throwable
+			stackTrace.append(it.toText())
+		}
 		
 	}
 	
 	fun parseFloorValues(): IntArray {
 		return pstAndGiven(intArrayOf()) {
 			val text = floorData.text.trim()
-			val lines = text.split("\n").filterNot { it.isBlank() }
+			val lines = text.split("\n").filterNot(String::isBlank).map(String::trim).map { it.split(" ") }
 			val intArray = IntArray(lines.size * 2)
-			lines.map { it.trim() }.flatMap { it.split(" ") }.map { it.toInt() }.forEachIndexed { index, value -> intArray[index] = value }
+			lines.forEachIndexed { i, value ->
+				intArray[i] = value[0].toInt()
+				intArray[i + 1] = parseData(value[1])
+			}
+//			lines.map { it.trim() }.flatMap { it.split(" ") }.map { it.toInt() }.forEachIndexed { index, value -> intArray[index] = value }
 			intArray
 		}
 	}
@@ -196,4 +202,14 @@ private fun JScrollPane.applyScrollBar(): JScrollPane {
 	verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
 //	horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
 	return this
+}
+
+private val dataRegex = """'.'""".toRegex(RegexOption.IGNORE_CASE)
+private fun parseData(it: String) = ignoreAndGiven(
+		if (it.matches(dataRegex))
+			DataConverter.toData(it.toCharArray()[1])
+		else
+			DataConverter.toData(it.toCharArray()[0])
+) {
+	it.toInt()
 }

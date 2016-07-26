@@ -21,7 +21,7 @@ private static boolean isNum(final int value) {
 	return !isChar(value);
 }
 private static boolean isChar(final int value) {
-	return (value & CHAR_MASK) != 0 && (((value & (~CHAR_MASK)) >> 6) ^ 0b01) == 0;
+	return (value & CHAR_MASK) != 0 && ((((value & (~CHAR_MASK)) >> 6) ^ 1) == 0 || (((value & (~CHAR_MASK)) >> 5) ^ 1) == 0);
 }
 private static char toChar(final int value) {
 	return (char) (value & (~CHAR_MASK));
