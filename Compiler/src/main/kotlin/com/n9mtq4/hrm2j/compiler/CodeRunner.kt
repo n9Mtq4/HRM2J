@@ -14,6 +14,16 @@ import javax.tools.ToolProvider
 fun runProgram(str: String, inboxValues: IntArray, floorSize: Int, floorValues: IntArray, outboxSize: Int, stackTrace: Boolean = false, file: File = File.createTempFile("InlineCompiled", ".java")) = runProgram(parseProgram(str), inboxValues, floorSize, floorValues, outboxSize, stackTrace, file)
 fun runProgram(program: Program, inboxValues: IntArray, floorSize: Int, floorValues: IntArray, outboxSize: Int, stackTrace: Boolean = false, file: File = File.createTempFile("InlineCompiled", ".java")): String {
 	
+	val cls = getCompiledClass(program, inboxValues, floorSize, floorValues, outboxSize, stackTrace, file)
+	
+	val method = cls.getDeclaredMethod("sRun")
+	val out = method.invoke(null)
+	
+	return out as String
+	
+}
+
+fun getCompiledClass(program: Program, inboxValues: IntArray, floorSize: Int, floorValues: IntArray, outboxSize: Int, stackTrace: Boolean = false, file: File = File.createTempFile("InlineCompiled", ".java")): Class<*> {
 	val className = file.nameWithoutExtension
 	val sourceFile = open(file, "w")
 	
@@ -23,14 +33,14 @@ fun runProgram(program: Program, inboxValues: IntArray, floorSize: Int, floorVal
 	
 	sourceFile.close()
 	
+	return compileFile(sourceFile, className)
+}
+
+private fun compileFile(file: File, className: String): Class<*> {
 	val compiler = ToolProvider.getSystemJavaCompiler()
-	compiler.run(null, null, null, sourceFile.path)
+	compiler.run(null, null, null, file.path)
 	
-	val classLoader = URLClassLoader.newInstance(arrayOf<URL>(sourceFile.parentFile.toURI().toURL()))
+	val classLoader = URLClassLoader.newInstance(arrayOf<URL>(file.parentFile.toURI().toURL()))
 	val cls = Class.forName(className, true, classLoader)
-	val method = cls.getDeclaredMethod("sRun")
-	val out = method.invoke(null)
-	
-	return out as String
-	
+	return cls
 }
