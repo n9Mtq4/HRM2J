@@ -30,8 +30,7 @@ class Interpreter(val program: Program, inboxValues: IntArray, floorSize: Int, f
 	fun run() {
 		
 		try {
-			// i'm too lazy to use a for loop. why not just do this
-			program.sections.mapIndexed { i, section -> i }.forEach { runSection(it) }
+			runSection(0)
 		}catch (e: Throwable) {
 			stackTrace = e
 			if (printStackTrace) e.printStackTrace()
@@ -42,7 +41,11 @@ class Interpreter(val program: Program, inboxValues: IntArray, floorSize: Int, f
 	tailrec fun runSection(index: Int) {
 		if (index == -1) return // finished
 		val section = program.sections[index]
-		if (section.commands.size <= 0) runSection(index + 1)
+		if (section.commands.size <= 0) {
+			if (index == program.sections.size - 1) return
+			runSection(index + 1)
+			return
+		}
 		section.commands.forEach {
 			when(it) {
 				is Command.Inbox -> { hand = inbox[inboxIndex++] }
@@ -63,8 +66,8 @@ class Interpreter(val program: Program, inboxValues: IntArray, floorSize: Int, f
 				is Command.JumpIfZero -> { if (hand == 0) { runSection(findSection(it.label)); return@forEach } }
 				// EXPANSION
 				is Command.Load -> { hand = it.value }
-				is Command.JumpIfEqual ->  { if (hand == floor[it.pointer]) { runSection(findSection(it.label)); return@forEach } }
-				is Command.Crash ->  { throw RuntimeException("crash command") } // if true fools the compiler to not give a unreachable code error
+				is Command.JumpIfEqual -> { if (hand == floor[it.pointer]) { runSection(findSection(it.label)); return@forEach } }
+				is Command.Crash -> { throw RuntimeException("crash command") } // if true fools the compiler to not give a unreachable code error
 			}
 		}
 		if (index == program.sections.size - 1) return
