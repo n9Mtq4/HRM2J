@@ -94,6 +94,7 @@ class Interpreter(val program: Program, inboxValues: IntArray, floorSize: Int, f
 				System.err.println("Data error: " + value)
 			}
 		}
+		if (out.length == 0) return ""
 		return out.substring(0, out.length - 1)
 	}
 	

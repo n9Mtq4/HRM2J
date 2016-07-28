@@ -156,7 +156,7 @@ class HrmGui {
 		
 		clearOutput()
 		
-		val program = parseProgram(codeArea.text) { stackTrace.append(it) }
+		val program = parseProgram(codeArea.text) { stackTrace.append(it + "\n") }
 		
 		val interpreter = Interpreter(program, parseInboxValues(), parseFloorSize(), parseFloorValues(), 0xfff)
 		interpreter.run()
@@ -172,8 +172,7 @@ class HrmGui {
 		
 		clearOutput()
 		
-		
-		val program = parseProgram(codeArea.text) { stackTrace.append(it) }
+		val program = parseProgram(codeArea.text) { stackTrace.append(it + "\n") }
 		
 		val clazz = getCompiledClass(program, parseInboxValues(), parseFloorSize(), parseFloorValues(), 0xfff, true)
 		
