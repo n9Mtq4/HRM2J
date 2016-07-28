@@ -1,9 +1,13 @@
 package com.n9mtq4.hrm2j.compiler
 
+import com.n9mtq4.hrm2j.parser.Program
+import com.n9mtq4.hrm2j.parser.parseProgram
 import com.n9mtq4.kotlin.extlib.io.open
+import java.awt.Component
 import java.io.File
 import java.net.URL
 import java.net.URLClassLoader
+import javax.swing.JOptionPane
 import javax.tools.ToolProvider
 
 /**
@@ -14,12 +18,17 @@ import javax.tools.ToolProvider
 fun runProgram(str: String, inboxValues: IntArray, floorSize: Int, floorValues: IntArray, outboxSize: Int, stackTrace: Boolean = false, file: File = File.createTempFile("InlineCompiled", ".java")) = runProgram(parseProgram(str), inboxValues, floorSize, floorValues, outboxSize, stackTrace, file)
 fun runProgram(program: Program, inboxValues: IntArray, floorSize: Int, floorValues: IntArray, outboxSize: Int, stackTrace: Boolean = false, file: File = File.createTempFile("InlineCompiled", ".java")): String {
 	
-	val cls = getCompiledClass(program, inboxValues, floorSize, floorValues, outboxSize, stackTrace, file)
-	
-	val method = cls.getDeclaredMethod("sRun")
-	val out = method.invoke(null)
-	
-	return out as String
+	try {
+		val cls = getCompiledClass(program, inboxValues, floorSize, floorValues, outboxSize, stackTrace, file)
+		
+		val method = cls.getDeclaredMethod("sRun")
+		val out = method.invoke(null)
+		
+		return out as String
+	}catch (e: Throwable) {
+		msg(parent = null, msg = e.javaClass.name, title = "error")
+	}
+	return ""
 	
 }
 
@@ -44,3 +53,5 @@ private fun compileFile(file: File, className: String): Class<*> {
 	val cls = Class.forName(className, true, classLoader)
 	return cls
 }
+
+fun msg(parent: Component? = null, msg: String, title: String, msgType: Int = JOptionPane.INFORMATION_MESSAGE) = JOptionPane.showMessageDialog(parent, msg, title, msgType)

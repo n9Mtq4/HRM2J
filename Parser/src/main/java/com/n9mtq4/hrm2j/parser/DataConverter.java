@@ -1,4 +1,4 @@
-package com.n9mtq4.hrm2j.compiler;
+package com.n9mtq4.hrm2j.parser;
 
 /**
  * Created by will on 7/17/16 at 3:13 PM.

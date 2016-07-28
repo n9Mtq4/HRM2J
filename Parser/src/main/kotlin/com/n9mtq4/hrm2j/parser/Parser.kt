@@ -1,4 +1,4 @@
-package com.n9mtq4.hrm2j.compiler
+package com.n9mtq4.hrm2j.parser
 
 import com.n9mtq4.kotlin.extlib.ignoreAndGiven
 

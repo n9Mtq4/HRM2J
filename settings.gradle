@@ -1,3 +1,5 @@
 rootProject.name = 'HRM2J'
 include 'Compiler'
 include 'Gui'
+include 'Parser'
+include 'Interpreter'

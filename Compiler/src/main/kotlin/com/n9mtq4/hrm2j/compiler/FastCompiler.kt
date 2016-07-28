@@ -1,5 +1,8 @@
 package com.n9mtq4.hrm2j.compiler
 
+import com.n9mtq4.hrm2j.parser.Command
+import com.n9mtq4.hrm2j.parser.Program
+
 /**
  * Created by will on 7/24/16 at 12:35 AM.
  *
@@ -150,6 +153,7 @@ fun <T> fastCompile(program: Program, className: String, packageName: String, in
 					is Command.Load -> "hand = ${it.value};"
 					is Command.JumpIfEqual -> "if (hand == floor[${it.pointer}]) { func_${it.label}(); return; }"
 					is Command.Crash -> "if (true) throw new RuntimeException(\"crash command\");" // if true fools the compiler to not give a unreachable code error
+					else -> "/*UNKNOWN COMMAND*/"
 				})
 			}
 			// if needed, call the next function in the chain
