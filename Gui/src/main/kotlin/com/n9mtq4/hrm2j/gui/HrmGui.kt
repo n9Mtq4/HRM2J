@@ -6,6 +6,10 @@ import com.n9mtq4.hrm2j.parser.DataConverter
 import com.n9mtq4.hrm2j.parser.parseProgram
 import com.n9mtq4.kotlin.extlib.ignoreAndGiven
 import com.n9mtq4.kotlin.extlib.pstAndGiven
+import org.fife.ui.autocomplete.AutoCompletion
+import org.fife.ui.autocomplete.BasicCompletion
+import org.fife.ui.autocomplete.CompletionProvider
+import org.fife.ui.autocomplete.DefaultCompletionProvider
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants
 import org.fife.ui.rtextarea.RTextScrollPane
@@ -19,6 +23,8 @@ import javax.swing.JScrollPane
 import javax.swing.JSplitPane
 import javax.swing.JTextArea
 import javax.swing.JTextField
+import javax.swing.text.JTextComponent
+import javax.swing.text.Segment
 import kotlin.concurrent.thread
 
 /**
@@ -55,6 +61,19 @@ class HrmGui {
 			tabSize = 4
 			columns = COLUMN_COUNT
 		}
+		
+		val provider = createProvider()
+		val ac = object : AutoCompletion(provider) {
+			override fun getAutoActivationDelay(): Int {
+				return 0
+			}
+		}
+		ac.isAutoCompleteEnabled = true
+		ac.isAutoActivationEnabled = true
+		ac.autoActivationDelay = 0
+		ac.autoCompleteSingleChoices = false
+		ac.setChoicesWindowSize(100, 200)
+		ac.install(codeArea)
 		
 		// input column
 		this.floorSize = JTextField("64")
@@ -121,7 +140,7 @@ class HrmGui {
 			isVisible = true
 			setLocationRelativeTo(null)
 		}
-	
+		
 	}
 	
 	fun clearOutput() {
@@ -140,7 +159,6 @@ class HrmGui {
 		val program = parseProgram(codeArea.text) { stackTrace.append(it) }
 		
 		val interpreter = Interpreter(program, parseInboxValues(), parseFloorSize(), parseFloorValues(), 0xfff)
-		
 		interpreter.run()
 		
 		val out = interpreter.toString()
@@ -233,4 +251,57 @@ private fun parseData(it: String) = ignoreAndGiven(
 			DataConverter.toData(it.toCharArray()[0])
 ) {
 	it.toInt()
+}
+
+private fun createProvider(): CompletionProvider {
+	
+	val provider = object : DefaultCompletionProvider() {
+		private val s1 = Segment()
+		/**
+		 * requires a custom implementation of this, or autocomplete wont auto activate
+		 * */
+		override fun isAutoActivateOkay(tc: JTextComponent?): Boolean {
+			if (tc == null) return false
+			return ignoreAndGiven(false) {
+				val doc = tc.document
+				doc.getText(tc.caretPosition, 1, s1)
+				val ch = s1.first()
+				Character.isLetter(ch)
+			}
+//			return super.isAutoActivateOkay(tc)
+		}
+	}
+	
+//	TODO: automate this. this is just another thing that has to be manually updated when a command is added :(
+	provider.addCmd(
+			"inbox",
+			"input",
+			"outbox",
+			"output",
+			"copyto",
+			"copyto [",
+			"copyfrom",
+			"copyfrom [",
+			"add",
+			"add [",
+			"sub",
+			"sub [",
+			"bumpup",
+			"inc",
+			"bumpdn",
+			"dec",
+			"jump",
+			"jumpn",
+			"jumpz",
+			"load",
+			"jumpeq",
+			"crash"
+	)
+	
+	return provider
+	
+}
+
+fun DefaultCompletionProvider.addCmd(vararg str: String) {
+	str.forEach { this.addCompletion(BasicCompletion(this, it)) }
 }

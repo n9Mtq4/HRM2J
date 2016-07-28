@@ -36,6 +36,7 @@ dependencies {
     compile project(":Interpreter")
     compile 'org.swinglabs:swingx:1.6.1'
     compile 'com.fifesoft:rsyntaxtextarea:2.5.8'
+    compile 'com.fifesoft:autocomplete:2.5.8'
 }
 
 sourceSets {
