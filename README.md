@@ -44,7 +44,7 @@ single quotes like '1'. The input data could consist of
 ```
 1,'1'
 ```
-Outboxing both will yeild the same output, but try adding them, and you will get 1073741874, instead of 2.
+Outboxing both will yield the same output, but try adding them, and you will get 1073741874, instead of 2.
 
 ### Planned
 The following diagram is a plan for the graphical interface.
