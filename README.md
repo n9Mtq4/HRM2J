@@ -15,7 +15,7 @@ HRM2J does not interpret the hrm assembly, instead it converts it into java. Thi
 |-----|-----|
 |HRM2J (Fast)|76|
 |HRM2J (Interpret)|97|
-|HRM2J (Bytecode)|???|
+|HRM2J (Bytecode NYI)|???|
 |[hrmsandbox](https://github.com/sixlettervariables/hrmsandbox)|602|
 
 Benchmark was performed with [this code (for level 41)](https://github.com/atesgoral/hrm-solutions/blob/9c92d7137f6a7593ab35389ab284fd3dcebd2a74/solutions/41-Sorting-Floor-34.714/20.651.selection-sniperrifle2004.asm),
@@ -25,8 +25,26 @@ being measured on 1000 runs. The measure was in running only, parsing the input 
 ```
 
 ## The GUI
-The GUI is being worked on, so you don't have to actually code in order to run a program.
-It doesn't work yet, but there are big plans for it.
+The gui is still in development, and isn't very user-friendly, but is gets the job done.
+In the code area, there is makeshift syntax highlighting as well as autocompletion.
+The input area, the floor data must be entered as two entries per line.
+For example if you want spot 0 to have a 1, spot 1 to have a 10 and spot 2 to have an 'a' do this:
+```
+0 1
+1 10
+2 a
+```
+The input data is entered as a long string separated by commas. For example
+```
+1,2,3,4,a,b,c
+```
+In both of these you can use letters and numbers and we can guess what data type it is without
+quotes. If you specifically want a character (like the char 1, not the number), you can surround it with
+single quotes like '1'. The input data could consist of 
+```
+1,'1'
+```
+Outboxing both will yeild the same output, but try adding them, and you will get 1073741874, instead of 2.
 
 ### Planned
 The following diagram is a plan for the graphical interface.
