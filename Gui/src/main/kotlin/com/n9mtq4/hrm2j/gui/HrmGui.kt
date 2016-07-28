@@ -1,8 +1,9 @@
 package com.n9mtq4.hrm2j.gui
 
-import com.n9mtq4.hrm2j.compiler.DataConverter
 import com.n9mtq4.hrm2j.compiler.getCompiledClass
-import com.n9mtq4.hrm2j.compiler.parseProgram
+import com.n9mtq4.hrm2j.interpreter.Interpreter
+import com.n9mtq4.hrm2j.parser.DataConverter
+import com.n9mtq4.hrm2j.parser.parseProgram
 import com.n9mtq4.kotlin.extlib.ignoreAndGiven
 import com.n9mtq4.kotlin.extlib.pstAndGiven
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
@@ -104,7 +105,8 @@ class HrmGui {
 			}
 			
 			menuList("Build") {
-				menuItem("Run").shortcut('r').onAction { thread(start = true) { runCode() } }
+				menuItem("Run (Interpret)").shortcut('r').onAction { thread(start = true) { runInterpretCode() } }
+				menuItem("Run (Compile)").shortcut('r', shift = true).onAction { thread(start = true) { compileRunCode() } }
 				menuItem("Show Java").shortcut('j').onAction { showJava() }
 			}
 			
@@ -131,23 +133,52 @@ class HrmGui {
 		// TODO: to be implemented
 	}
 	
-	fun runCode() {
+	fun runInterpretCode() {
 		
 		clearOutput()
 		
 		val program = parseProgram(codeArea.text) { stackTrace.append(it) }
-		val clazz = getCompiledClass(program, parseInboxValues(), parseFloorSize(), parseFloorValues(), 0xfff, true)
 		
-		val instance = clazz.newInstance()
-		val method = clazz.getDeclaredMethod("run")
-		val out = method.invoke(instance) as String
-		val field = clazz.getDeclaredField("stackTrace")
+		val interpreter = Interpreter(program, parseInboxValues(), parseFloorSize(), parseFloorValues(), 0xfff)
 		
+		interpreter.run()
+		
+		val out = interpreter.toString()
 		output.append(out)
 		
-		field.get(instance)?.let {
-			it as Throwable
+		interpreter.stackTrace?.let { 
 			stackTrace.append(it.toText())
+		}
+		
+	}
+	
+	fun compileRunCode() {
+		
+		clearOutput()
+		
+		try {
+			
+			val program = parseProgram(codeArea.text) { stackTrace.append(it) }
+			
+			val clazz = getCompiledClass(program, parseInboxValues(), parseFloorSize(), parseFloorValues(), 0xfff, true)
+			
+			val instance = clazz.newInstance()
+			val method = clazz.getDeclaredMethod("run")
+			val out = method.invoke(instance) as String
+			val field = clazz.getDeclaredField("stackTrace")
+			
+			output.append(out)
+			
+			field.get(instance)?.let {
+				it as Throwable
+				stackTrace.append(it.toText())
+			}
+			
+		}catch (e: Throwable) {
+			msg(parent = frame, msg = "There was an error compiling the code.\n" +
+					"In order to compile the java to a class you\n" +
+					"must have the JDK installed and run this program\n" +
+					"from the command line.", title = "Can't Run the code!")
 		}
 		
 	}
