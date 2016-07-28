@@ -146,9 +146,7 @@ class HrmGui {
 		val out = interpreter.toString()
 		output.append(out)
 		
-		interpreter.stackTrace?.let { 
-			stackTrace.append(it.toText())
-		}
+		stackTrace.append(interpreter.stackTrace?.toText())
 		
 	}
 	
@@ -156,29 +154,21 @@ class HrmGui {
 		
 		clearOutput()
 		
-		try {
-			
-			val program = parseProgram(codeArea.text) { stackTrace.append(it) }
-			
-			val clazz = getCompiledClass(program, parseInboxValues(), parseFloorSize(), parseFloorValues(), 0xfff, true)
-			
-			val instance = clazz.newInstance()
-			val method = clazz.getDeclaredMethod("run")
-			val out = method.invoke(instance) as String
-			val field = clazz.getDeclaredField("stackTrace")
-			
-			output.append(out)
-			
-			field.get(instance)?.let {
-				it as Throwable
-				stackTrace.append(it.toText())
-			}
-			
-		}catch (e: Throwable) {
-			msg(parent = frame, msg = "There was an error compiling the code.\n" +
-					"In order to compile the java to a class you\n" +
-					"must have the JDK installed and run this program\n" +
-					"from the command line.", title = "Can't Run the code!")
+		
+		val program = parseProgram(codeArea.text) { stackTrace.append(it) }
+		
+		val clazz = getCompiledClass(program, parseInboxValues(), parseFloorSize(), parseFloorValues(), 0xfff, true)
+		
+		val instance = clazz.newInstance()
+		val method = clazz.getDeclaredMethod("run")
+		val out = method.invoke(instance) as String
+		val field = clazz.getDeclaredField("stackTrace")
+		
+		output.append(out)
+		
+		field.get(instance)?.let {
+			it as Throwable
+			stackTrace.append(it.toText())
 		}
 		
 	}
