@@ -9,7 +9,7 @@ import com.n9mtq4.hrm2j.parser.Program
  *
  * @author Will "n9Mtq4" Bresnahan
  */
-class Interpreter(val program: Program, inboxValues: IntArray, floorSize: Int, floorValues: IntArray, outboxSize: Int) {
+class Interpreter(val program: Program, inboxValues: IntArray, floorSize: Int, floorValues: IntArray, outboxSize: Int, val printStackTrace: Boolean = true) {
 	
 	val inbox: IntArray = inboxValues
 	var inboxIndex = 0
@@ -34,7 +34,7 @@ class Interpreter(val program: Program, inboxValues: IntArray, floorSize: Int, f
 			program.sections.mapIndexed { i, section -> i }.forEach { runSection(it) }
 		}catch (e: Throwable) {
 			stackTrace = e
-			e.printStackTrace()
+			if (printStackTrace) e.printStackTrace()
 		}
 		
 	}
