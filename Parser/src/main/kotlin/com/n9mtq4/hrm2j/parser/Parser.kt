@@ -67,8 +67,8 @@ fun parseProgram(str: String, error: (String) -> Unit = {}): Program {
 			}.
 			map { it.replace(Regex("\\s+"), " ") }. // replace more then one space with one space
 			filterNot(String::isBlank). // remove blank lines
-			filterNot { it.startsWith("define comment", true) }. // remove comment definitions
-			filterNot { it.startsWith("define label", true) }. // remove label definitions
+//			filterNot { it.startsWith("define comment", true) }. // remove comment definitions
+//			filterNot { it.startsWith("define label", true) }. // remove label definitions
 			forEach { line ->
 				
 				// now actually handle the parsing of the program
