@@ -24,6 +24,33 @@ being measured on 1000 runs. The measure was in running only, parsing the input 
 1,2,3,4,0,4,3,2,1,0,1,3,3,2,2,1,4,0,4,3,2,1,4,3,2,1,4,3,2,1,0,2,1,3,4,7,8,3,2,1,4,6,0,2,7,3,5,1,2,3,0,4,3,1,2,4,2,3,1,4,0
 ```
 
+## Runtime
+### Error reporting
+This runtime is much more efficient than the default HRM runner. This is partially due to
+the lack of error checking. There is no error checking in this program. If you break something,
+you might just discover it in a crash or a int under or overflow.
+### Number range
+This program can display all numbers, except for those in this range: 1073741856 -> 1073741951.
+In practice, this small gap isn't a big deal as the default HRM language only allows numbers
+within -999 -> 999, so any code that will work in the default game will work here.
+This program can display all (maybe most) of the ASCII characters
+``` ,!,",#,$,%,&,',(,),*,+,,,-,.,/,0,1,2,3,4,5,6,7,8,9,:,;,<,=,>,?,@,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,[,\,],^,_,`,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,{,|,},~,```
+This program will display them all:
+```
+-- EXTENDED HUMAN RESOURCE MACHINE PROGRAM --
+setup:
+	load 1073741855 -- first char is at 1073741856 (0b0100000)
+	copyto 0
+loop: -- inc, output, check if done
+	inc 0
+	output
+	load 1073741951 -- last char is at 1073741951  (0b1111111)
+	jumpeq 0 done
+	jump loop
+done:
+
+```
+
 ## The GUI
 The gui is still in development, and isn't very user-friendly, but is gets the job done.
 In the code area, there is makeshift syntax highlighting as well as autocompletion.
