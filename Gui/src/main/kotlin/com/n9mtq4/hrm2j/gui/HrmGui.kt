@@ -1,10 +1,13 @@
 package com.n9mtq4.hrm2j.gui
 
+import com.n9mtq4.hrm2j.compiler.fastCompile
 import com.n9mtq4.hrm2j.compiler.getCompiledClass
 import com.n9mtq4.hrm2j.interpreter.Interpreter
 import com.n9mtq4.hrm2j.parser.DataConverter
 import com.n9mtq4.hrm2j.parser.parseProgram
+import com.n9mtq4.kotlin.extlib.ignore
 import com.n9mtq4.kotlin.extlib.ignoreAndGiven
+import com.n9mtq4.kotlin.extlib.loop.forever
 import com.n9mtq4.kotlin.extlib.pstAndGiven
 import org.fife.ui.autocomplete.AutoCompletion
 import org.fife.ui.autocomplete.BasicCompletion
@@ -18,6 +21,7 @@ import java.awt.BorderLayout
 import java.awt.Component
 import javax.swing.JFrame
 import javax.swing.JLabel
+import javax.swing.JOptionPane
 import javax.swing.JPanel
 import javax.swing.JScrollPane
 import javax.swing.JSplitPane
@@ -149,7 +153,20 @@ class HrmGui {
 	}
 	
 	fun showJava() {
-		// TODO: to be implemented
+		
+		ignore {
+			stackTrace.append("SHOW JAVA\n")
+			val program = parseProgram(codeArea.text) { stackTrace.append(it + "\n") }
+			
+			val packageName = requestString(frame, "Name of java package?")!!
+			val className = requestString(frame, "Name of java class?")!!
+			var code = ""
+			fastCompile(program, className, packageName, parseInboxValues(), parseFloorSize(), parseFloorValues(), 0xfff) {
+				code += it + "\n"
+			}
+			ShowJava(code)
+		}
+		
 	}
 	
 	fun runInterpretCode() {
@@ -261,11 +278,27 @@ private fun createProvider(): CompletionProvider {
 		 * */
 		override fun isAutoActivateOkay(tc: JTextComponent?): Boolean {
 			if (tc == null) return false
-			return ignoreAndGiven(false) {
+			return pstAndGiven(false) stackTrace@{
 				val doc = tc.document
-				doc.getText(tc.caretPosition, 1, s1)
+				val pointerLoc = tc.caretPosition
+				doc.getText(pointerLoc, 1, s1)
 				val ch = s1.first()
-				Character.isLetter(ch)
+				if (!Character.isLetter(ch)) return@stackTrace false
+				// ok we want to make sure there isn't a text then a space. example: no autocomplete with "load a" <- on the a. also be careful of indents w/ spaces
+				val text = Segment()
+				// text.isPartialReturn = true // javadocs says that this will be faster for a large data. currently only uses 1 character
+				var space = false
+				var letter = false
+				var offSet = 1
+				ignore { forever {
+					doc.getText(pointerLoc - offSet, 1, text)
+					if (text.first() == ' ') space = true // ok, we saw a space
+					if (Character.isLetter(text.first()) && space) letter = true // this prevents spaces in indents triggering the no autocomplete
+					offSet++
+					if (pointerLoc - offSet == -1 || text.length == 0 || text.first() == '\n') return@ignore
+				} }
+				if (space && letter) return@stackTrace false // they both have to be true to disable
+				true // nothing else to check, so must be ok
 			}
 //			return super.isAutoActivateOkay(tc)
 		}
@@ -303,4 +336,10 @@ private fun createProvider(): CompletionProvider {
 
 fun DefaultCompletionProvider.addCmd(vararg str: String) {
 	str.forEach { this.addCompletion(BasicCompletion(this, it)) }
+}
+
+internal fun requestString(parent: JFrame, text: String, initValue: String = "", onSuccess: (String) -> Unit = {}): String? {
+	val response = JOptionPane.showInputDialog(parent, text, initValue)
+	onSuccess.invoke(response ?: return null)
+	return response
 }
