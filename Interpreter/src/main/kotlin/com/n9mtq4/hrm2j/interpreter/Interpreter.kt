@@ -38,7 +38,7 @@ class Interpreter(val program: Program, inboxValues: IntArray, floorSize: Int, f
 		
 	}
 	
-	tailrec fun runSection(index: Int) {
+	fun runSection(index: Int) {
 		if (index == -1) return // finished
 		val section = program.sections[index]
 		if (section.commands.size <= 0) {
@@ -61,12 +61,12 @@ class Interpreter(val program: Program, inboxValues: IntArray, floorSize: Int, f
 				is Command.Increment -> { floor[it.pointer]++; hand = floor[it.pointer] }
 				is Command.Decrement -> { floor[it.pointer]--; hand = floor[it.pointer] }
 				// JUMPS
-				is Command.Jump -> { runSection(findSection(it.label)); return@forEach }
-				is Command.JumpIfNegative -> { if (hand < 0) { runSection(findSection(it.label)); return@forEach } }
-				is Command.JumpIfZero -> { if (hand == 0) { runSection(findSection(it.label)); return@forEach } }
+				is Command.Jump -> { runSection(findSection(it.label)); return }
+				is Command.JumpIfNegative -> { if (hand < 0) { runSection(findSection(it.label)); return } }
+				is Command.JumpIfZero -> { if (hand == 0) { runSection(findSection(it.label)); return } }
 				// EXPANSION
 				is Command.Load -> { hand = it.value }
-				is Command.JumpIfEqual -> { if (hand == floor[it.pointer]) { runSection(findSection(it.label)); return@forEach } }
+				is Command.JumpIfEqual -> { if (hand == floor[it.pointer]) { runSection(findSection(it.label)); return } }
 				is Command.Crash -> { throw RuntimeException("crash command") } // if true fools the compiler to not give a unreachable code error
 			}
 		}
