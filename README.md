@@ -33,10 +33,10 @@ you might just discover it in a crash or a int under or overflow.
 This program can display all numbers, except for those in this range: 1073741856 -> 1073741951.
 In practice, this small gap isn't a big deal as the default HRM language only allows numbers
 within -999 -> 999, so any code that will work in the default game will work here.
-This program can display all (maybe most) of the ASCII characters
-``` ,!,",#,$,%,&,',(,),*,+,,,-,.,/,0,1,2,3,4,5,6,7,8,9,:,;,<,=,>,?,@,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,[,\,],^,_,`,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,{,|,},~,```
-This program will display them all:
-```
+The runtime can display all (or at least most) of the ASCII characters
+`` ,!,",#,$,%,&,',(,),*,+,,,-,.,/,0,1,2,3,4,5,6,7,8,9,:,;,<,=,>,?,@,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,[,\,],^,_,`,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,{,|,},~,``
+The following program will display them all:
+```lua
 -- EXTENDED HUMAN RESOURCE MACHINE PROGRAM --
 setup:
 	load 1073741855 -- first char is at 1073741856 (0b0100000)
