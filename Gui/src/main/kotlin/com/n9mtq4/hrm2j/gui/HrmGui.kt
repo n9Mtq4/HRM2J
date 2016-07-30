@@ -131,6 +131,10 @@ class HrmGui {
 				menuItem("Open").shortcut('o')
 			}
 			
+			menuList("Edit") {
+				menuItem("Clear Output").onAction { clearOutput() }
+			}
+			
 			menuList("Build") {
 				menuItem("Run (Interpret)").shortcut('r').onAction { thread(start = true) { runInterpretCode() } }
 				menuItem("Run (Compile)").shortcut('r', shift = true).onAction { thread(start = true) { compileRunCode() } }
