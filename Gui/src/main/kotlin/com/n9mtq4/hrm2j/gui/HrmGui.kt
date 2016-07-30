@@ -13,6 +13,7 @@ import org.fife.ui.autocomplete.AutoCompletion
 import org.fife.ui.autocomplete.BasicCompletion
 import org.fife.ui.autocomplete.CompletionProvider
 import org.fife.ui.autocomplete.DefaultCompletionProvider
+import org.fife.ui.autocomplete.TemplateCompletion
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants
 import org.fife.ui.rtextarea.RTextScrollPane
@@ -72,12 +73,15 @@ class HrmGui {
 				return 0
 			}
 		}
-		ac.isAutoCompleteEnabled = true
-		ac.isAutoActivationEnabled = true
-		ac.autoActivationDelay = 0
-		ac.autoCompleteSingleChoices = false
-		ac.setChoicesWindowSize(100, 200)
-		ac.install(codeArea)
+		ac.run {
+			isAutoCompleteEnabled = true
+			isAutoActivationEnabled = true
+			autoActivationDelay = 0
+			autoCompleteSingleChoices = false
+			isParameterAssistanceEnabled = true;
+			setChoicesWindowSize(100, 200)
+			install(codeArea)
+		}
 		
 		// input column
 		this.floorSize = JTextField("64")
@@ -106,7 +110,7 @@ class HrmGui {
 		// set up output column
 		val outputColumn = JSplitPane(JSplitPane.VERTICAL_SPLIT)
 		outputColumn.topComponent = JScrollPane(output).applyScrollBar().withTitle("Text")
-		outputColumn.bottomComponent = JScrollPane(stackTrace).applyScrollBar().withTitle("StackTrace")
+		outputColumn.bottomComponent = JScrollPane(stackTrace).applyScrollBar().withTitle("Messages")
 		outputColumn.resizeWeight = .5
 		
 		val codeAreaScroll = RTextScrollPane(codeArea).apply { 
@@ -305,36 +309,37 @@ private fun createProvider(): CompletionProvider {
 	}
 	
 //	TODO: automate this. this is just another thing that has to be manually updated when a command is added :(
-	provider.addCmd(
-			"inbox",
-			"input",
-			"outbox",
-			"output",
-			"copyto ",
-			"copyto [",
-			"copyfrom ",
-			"copyfrom [",
-			"add ",
-			"add [",
-			"sub ",
-			"sub [",
-			"bumpup ",
-			"inc ",
-			"bumpdn ",
-			"dec ",
-			"jump ",
-			"jumpn ",
-			"jumpz ",
-			"load ",
-			"jumpeq ",
-			"crash"
-	)
+	provider.run {
+		addCmdBasic("inbox", "input")
+		addCmdBasic("outbox", "output")
+		addCmd("copyto", "copyto \${pointer}")
+		addCmd("copyto [", "copyto [\${index}]")
+		addCmd("copyfrom", "copyfrom \${pointer}")
+		addCmd("copyfrom [", "copyfrom [\${index}]")
+		addCmd("add", "add \${pointer}")
+		addCmd("add [", "add [\${index}]")
+		addCmd("sub", "sub \${pointer}")
+		addCmd("sub [", "sub [\${index}]")
+		addCmd("bumpup", "bumpup \${pointer}")
+		addCmd("inc", "inc \${pointer}")
+		addCmd("bumpdn", "bumpdn \${pointer}")
+		addCmd("dec", "dec \${pointer}")
+		addCmd("jump", "jump \${label}")
+		addCmd("jumpn", "jumpn \${label}")
+		addCmd("jumpz", "jumpz \${label}")
+		addCmd("load", "load \${value}")
+		addCmd("jumpeq", "jumpeq \${pointer} \${label}")
+		addCmdBasic("crash")
+	}
 	
 	return provider
 	
 }
 
-fun DefaultCompletionProvider.addCmd(vararg str: String) {
+fun DefaultCompletionProvider.addCmd(input: String, template: String) {
+	this.addCompletion(TemplateCompletion(this, input, input, template))
+}
+fun DefaultCompletionProvider.addCmdBasic(vararg str: String) {
 	str.forEach { this.addCompletion(BasicCompletion(this, it)) }
 }
 
