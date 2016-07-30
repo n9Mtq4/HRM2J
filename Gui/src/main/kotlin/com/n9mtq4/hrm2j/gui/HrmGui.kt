@@ -220,11 +220,10 @@ class HrmGui {
 			val text = floorData.text.trim()
 			val lines = text.split("\n").filterNot(String::isBlank).map(String::trim).map { it.split(" ") }
 			val intArray = IntArray(lines.size * 2)
-			lines.forEachIndexed { i, value ->
-				intArray[i] = value[0].toInt()
-				intArray[i + 1] = parseData(value[1])
+			for (i in 0..(lines.size - 1)) {
+				intArray[i * 2] = lines[i][0].toInt()
+				intArray[i * 2 + 1] = parseData(lines[i][1])
 			}
-//			lines.map { it.trim() }.flatMap { it.split(" ") }.map { it.toInt() }.forEachIndexed { index, value -> intArray[index] = value }
 			intArray
 		}
 	}
