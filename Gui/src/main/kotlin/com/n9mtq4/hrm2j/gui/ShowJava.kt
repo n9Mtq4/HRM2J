@@ -21,6 +21,7 @@ class ShowJava(val javaStr: String) {
 		val textArea = RSyntaxTextArea(javaStr).apply {
 			syntaxEditingStyle = SyntaxConstants.SYNTAX_STYLE_LUA // HRM more closely matches lua than assembly
 			tabSize = 4
+			isEditable = false
 		}
 		
 		frame.run {
