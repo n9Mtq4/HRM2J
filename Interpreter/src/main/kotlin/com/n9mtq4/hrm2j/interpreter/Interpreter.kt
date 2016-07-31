@@ -3,6 +3,7 @@ package com.n9mtq4.hrm2j.interpreter
 import com.n9mtq4.hrm2j.parser.Command
 import com.n9mtq4.hrm2j.parser.DataConverter
 import com.n9mtq4.hrm2j.parser.Program
+import com.n9mtq4.hrm2j.parser.sectionIndexOf
 
 /**
  * Created by will on 7/28/16 at 12:08 AM.
@@ -61,26 +62,17 @@ class Interpreter(val program: Program, inboxValues: IntArray, floorSize: Int, f
 				is Command.Increment -> { floor[it.pointer]++; hand = floor[it.pointer] }
 				is Command.Decrement -> { floor[it.pointer]--; hand = floor[it.pointer] }
 				// JUMPS
-				is Command.Jump -> { runSection(findSection(it.label)); return }
-				is Command.JumpIfNegative -> { if (hand < 0) { runSection(findSection(it.label)); return } }
-				is Command.JumpIfZero -> { if (hand == 0) { runSection(findSection(it.label)); return } }
+				is Command.Jump -> { runSection(program.sectionIndexOf(it.label)); return }
+				is Command.JumpIfNegative -> { if (hand < 0) { runSection(program.sectionIndexOf(it.label)); return } }
+				is Command.JumpIfZero -> { if (hand == 0) { runSection(program.sectionIndexOf(it.label)); return } }
 				// EXPANSION
 				is Command.Load -> { hand = it.value }
-				is Command.JumpIfEqual -> { if (hand == floor[it.pointer]) { runSection(findSection(it.label)); return } }
+				is Command.JumpIfEqual -> { if (hand == floor[it.pointer]) { runSection(program.sectionIndexOf(it.label)); return } }
 				is Command.Crash -> { throw RuntimeException("crash command") } // if true fools the compiler to not give a unreachable code error
 			}
 		}
 		if (index == program.sections.size - 1) return
 		runSection(index + 1)
-	}
-	
-	private fun findSection(label: String): Int {
-		program.sections.forEachIndexed { i, section -> 
-			if (section.label == label) {
-				return i
-			}
-		}
-		return -1
 	}
 	
 	override fun toString(): String {

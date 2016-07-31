@@ -42,3 +42,12 @@ interface Value {
 
 data class Section(val label: String, val commands: List<Command>)
 data class Program(val sections: List<Section>)
+
+fun Program.sectionIndexOf(label: String): Int {
+	this.sections.forEachIndexed { i, section ->
+		if (section.label == label) {
+			return i
+		}
+	}
+	return -1
+}

@@ -92,7 +92,21 @@ fun parseProgram(str: String, error: (String) -> Unit = {}): Program {
 	sectionList.add(Section(sectionName, commands))
 	
 	// lets wrap it up in a nice program
-	return Program(sectionList)
+	val program =  Program(sectionList)
+	
+	postProgramCheck(program, error)
+	
+	return program
+	
+}
+
+private fun postProgramCheck(program: Program, error: (String) -> Unit = {}) {
+	
+	program.sections.flatMap { it.commands }.filter { it is Label }.forEach { 
+		it as Label
+		val index = program.sectionIndexOf(it.label)
+		if (index == -1) error("No label '${it.label}' in this program!")
+	}
 	
 }
 
