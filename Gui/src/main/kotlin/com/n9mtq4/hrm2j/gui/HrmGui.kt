@@ -3,10 +3,10 @@ package com.n9mtq4.hrm2j.gui
 import com.n9mtq4.hrm2j.compiler.fastCompile
 import com.n9mtq4.hrm2j.compiler.getCompiledClass
 import com.n9mtq4.hrm2j.interpreter.Interpreter
-import com.n9mtq4.hrm2j.parser.DataConverter
+import com.n9mtq4.hrm2j.parser.getHrmValue
 import com.n9mtq4.hrm2j.parser.parseProgram
+import com.n9mtq4.hrm2j.parser.toBasesInt
 import com.n9mtq4.kotlin.extlib.ignore
-import com.n9mtq4.kotlin.extlib.ignoreAndGiven
 import com.n9mtq4.kotlin.extlib.loop.forever
 import com.n9mtq4.kotlin.extlib.pstAndGiven
 import org.fife.ui.autocomplete.AutoCompletion
@@ -43,22 +43,26 @@ class HrmGui {
 	
 	private val frame: JFrame
 	
+	private val splitPane: JXMultiSplitPane
+	
 	private val codeArea: RSyntaxTextArea
 	
 	private val floorSize: JTextField
 	private val floorData: JTextArea
 	private val inputData: JTextArea
+	
+	private val outputSize: JTextField
 	private val output: JTextArea
 	private val stackTrace: JTextArea
-	private val splitPane: JXMultiSplitPane
 	
 	init {
 		
 		this.frame = JFrame("HRM IDE")
 		
-		this.splitPane = JXMultiSplitPane()
-		
-		splitPane.setModel(ThreeVerticalModel(.5, .25, .25))
+//		main thing
+		this.splitPane = JXMultiSplitPane().apply { 
+			setModel(ThreeVerticalModel(.5, .25, .25))
+		}
 		
 		// code column
 		this.codeArea = RSyntaxTextArea().apply {
@@ -68,12 +72,11 @@ class HrmGui {
 		}
 		
 		val provider = createProvider()
-		val ac = object : AutoCompletion(provider) {
+		object : AutoCompletion(provider) {
 			override fun getAutoActivationDelay(): Int {
 				return 0
 			}
-		}
-		ac.run {
+		}.apply {
 			isAutoCompleteEnabled = true
 			isAutoActivationEnabled = true
 			autoActivationDelay = 0
@@ -82,47 +85,57 @@ class HrmGui {
 			setChoicesWindowSize(100, 200)
 			install(codeArea)
 		}
-		
-		// input column
-		this.floorSize = JTextField("64")
-		this.floorData = JTextArea().apply { lineWrap = true; columns = COLUMN_COUNT }
-		this.inputData = JTextArea().apply { lineWrap = true; columns = COLUMN_COUNT }
-		
-		// output column
-		this.output = JTextArea().apply { lineWrap = true; columns = COLUMN_COUNT }
-		this.stackTrace = JTextArea().apply { 
-			tabSize = 4
-			columns = COLUMN_COUNT
-		}
-		output.isEditable = false
-		stackTrace.isEditable = false
-		
-		// set up input column
-		val inputColumn = JSplitPane(JSplitPane.VERTICAL_SPLIT)
-		val floorPanel = JPanel(BorderLayout())
-		floorPanel.add(floorSize.withTitle("Floor Size"), BorderLayout.NORTH)
-		floorPanel.add(JScrollPane(floorData).applyScrollBar().withTitle("Floor Data"), BorderLayout.CENTER)
-		
-		inputColumn.topComponent = floorPanel
-		inputColumn.bottomComponent = JScrollPane(inputData).applyScrollBar().withTitle("Input Data")
-		inputColumn.resizeWeight = .5
-		
-		// set up output column
-		val outputColumn = JSplitPane(JSplitPane.VERTICAL_SPLIT)
-		outputColumn.topComponent = JScrollPane(output).applyScrollBar().withTitle("Text")
-		outputColumn.bottomComponent = JScrollPane(stackTrace).applyScrollBar().withTitle("Messages")
-		outputColumn.resizeWeight = .5
-		
-		val codeAreaScroll = RTextScrollPane(codeArea).apply { 
+		val codeAreaScroll = RTextScrollPane(codeArea).apply {
 			lineNumbersEnabled = true
 		}.applyScrollBar()
 		
+		// input column objects
+		this.floorSize = JTextField("64")
+		this.floorData = JTextArea().apply { lineWrap = true; columns = COLUMN_COUNT }
+		this.inputData = JTextArea().apply { lineWrap = true; columns = COLUMN_COUNT }
+		// set up input column
+		val inputTopPanel = JPanel(BorderLayout()).apply {
+			val floorDataScroll = JScrollPane(floorData).applyScrollBar().withTitle("Floor Data")
+			add(floorSize.withTitle("Floor Size"), BorderLayout.NORTH)
+			add(floorDataScroll, BorderLayout.CENTER)
+		}
+		val inputColumn = JSplitPane(JSplitPane.VERTICAL_SPLIT).apply {
+			topComponent = inputTopPanel
+			bottomComponent = JScrollPane(inputData).applyScrollBar().withTitle("Input Data")
+			resizeWeight = .5
+		}
+		
+		// output column objects
+		this.outputSize = JTextField("0xfff")
+		this.output = JTextArea().apply {
+			lineWrap = true
+			columns = COLUMN_COUNT
+			isEditable = false
+		}
+		this.stackTrace = JTextArea().apply { 
+			tabSize = 4
+			columns = COLUMN_COUNT
+			isEditable = false
+		}
+		// set up output column
+		val outputTopPanel = JPanel(BorderLayout()).apply {
+			add(outputSize.withTitle("Output Size"), BorderLayout.NORTH)
+			add(JScrollPane(output).applyScrollBar().withTitle("Text"), BorderLayout.CENTER)
+		}
+		val outputColumn = JSplitPane(JSplitPane.VERTICAL_SPLIT).apply {
+			topComponent = outputTopPanel
+			bottomComponent = JScrollPane(stackTrace).applyScrollBar().withTitle("Messages")
+			resizeWeight = .5
+		}
+		
+		// add them all
 		splitPane.run {
 			add(codeAreaScroll.withTitle("Code"), ThreeVerticalModel.P1)
 			add(inputColumn.withTitle("Input"), ThreeVerticalModel.P2)
 			add(outputColumn.withTitle("Output"), ThreeVerticalModel.P3)
 		}
 		
+		// menu bar
 		val menuBar = menuBar { 
 			
 			menuList("File") {
@@ -143,6 +156,7 @@ class HrmGui {
 			
 		}
 		
+		// show the frame
 		frame.run {
 			defaultCloseOperation = JFrame.EXIT_ON_CLOSE
 			jMenuBar = menuBar
@@ -169,7 +183,7 @@ class HrmGui {
 			val packageName = requestString(frame, "Name of java package?")!!
 			val className = requestString(frame, "Name of java class?")!!
 			var code = ""
-			fastCompile(program, className, packageName, parseInboxValues(), parseFloorSize(), parseFloorValues(), 0xfff) {
+			fastCompile(program, className, packageName, parseInboxValues(), parseFloorSize(), parseFloorValues(), parseOutboxSize()) {
 				code += it + "\n"
 			}
 			ShowJava(code)
@@ -183,7 +197,7 @@ class HrmGui {
 		
 		val program = parseProgram(codeArea.text) { stackTrace.append(it + "\n") }
 		
-		val interpreter = Interpreter(program, parseInboxValues(), parseFloorSize(), parseFloorValues(), 0xfff)
+		val interpreter = Interpreter(program, parseInboxValues(), parseFloorSize(), parseFloorValues(), parseOutboxSize())
 		interpreter.run()
 		
 		val out = interpreter.toString()
@@ -199,7 +213,7 @@ class HrmGui {
 		
 		val program = parseProgram(codeArea.text) { stackTrace.append(it + "\n") }
 		
-		val clazz = getCompiledClass(program, parseInboxValues(), parseFloorSize(), parseFloorValues(), 0xfff, true)
+		val clazz = getCompiledClass(program, parseInboxValues(), parseFloorSize(), parseFloorValues(), parseOutboxSize(), true)
 		
 		val instance = clazz.newInstance()
 		val method = clazz.getDeclaredMethod("run")
@@ -222,7 +236,7 @@ class HrmGui {
 			val intArray = IntArray(lines.size * 2)
 			for (i in 0..(lines.size - 1)) {
 				intArray[i * 2] = lines[i][0].toInt()
-				intArray[i * 2 + 1] = parseData(lines[i][1])
+				intArray[i * 2 + 1] = lines[i][1].getHrmValue()
 			}
 			intArray
 		}
@@ -232,24 +246,20 @@ class HrmGui {
 		return pstAndGiven(intArrayOf()) {
 			val text = inputData.text
 			val items = text.split(",")
-			val dataRegex = """'.'""".toRegex(RegexOption.IGNORE_CASE)
-			val list = items.map {
-				ignoreAndGiven(
-						if (it.matches(dataRegex))
-							DataConverter.toData(it.toCharArray()[1])
-						else
-							DataConverter.toData(it.toCharArray()[0])
-				) {
-					it.toInt()
-				}
-			}
+			val list = items.map { it.getHrmValue() }
 			list.toTypedArray().toIntArray()
 		}
 	}
 	
 	fun parseFloorSize(): Int {
-		return pstAndGiven(64) {
-			floorSize.text.toInt()
+		return pstAndGiven(0x40) {
+			floorSize.text.toBasesInt()
+		}
+	}
+	
+	fun parseOutboxSize(): Int {
+		return pstAndGiven(0xfff) {
+			outputSize.text.toBasesInt()
 		}
 	}
 	
@@ -264,16 +274,6 @@ private fun JScrollPane.applyScrollBar(): JScrollPane {
 	verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
 //	horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
 	return this
-}
-
-private val dataRegex = """'.'""".toRegex(RegexOption.IGNORE_CASE)
-private fun parseData(it: String) = ignoreAndGiven(
-		if (it.matches(dataRegex))
-			DataConverter.toData(it.toCharArray()[1])
-		else
-			DataConverter.toData(it.toCharArray()[0])
-) {
-	it.toInt()
 }
 
 private fun createProvider(): CompletionProvider {
