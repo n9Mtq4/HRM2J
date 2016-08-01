@@ -7,44 +7,55 @@ import com.n9mtq4.kotlin.extlib.ignoreAndGiven
  *
  * @author Will "n9Mtq4" Bresnahan
  */
+
+private const val DIGIT = """(-?(0[xX][0-9a-fA-F]+)+|-?0[bB][01]+|(-?[0-9]+))"""
+private const val VALUE = """(-?(0[xX][0-9a-fA-F]+)+|-?0[bB][01]+|(-?[0-9]+)|'.'|\D)"""
+
 enum class CommandMatcher(private val regexStr: String, internal val getCommand: (String) -> Command, internal val regex: Regex = regexStr.toRegex(RegexOption.IGNORE_CASE)) {
 	
 	INBOX("""^(inbox|input)""", { Command.Inbox() }),
 	OUTBOX("""^(outbox|output)""", { Command.Outbox() }),
-	COPY_TO_BOX("""^copyto [0-9]+""", { Command.CopyToBox(getBoxNum(it)) }),
-	COPY_TO_BOX_VALUE("""^copyto \[[0-9]+\]""", { Command.CopyToBoxValue(getBoxValueNum(it)) }),
-	COPY_FROM_BOX("""^copyfrom [0-9]+""", { Command.CopyFromBox(getBoxNum(it)) }),
-	COPY_FROM_BOX_VALUE("""^copyfrom \[[0-9]+\]""", { Command.CopyFromBoxValue(getBoxValueNum(it)) }),
-	ADD_TO_BOX("""^add [0-9]+""", { Command.AddToBox(getBoxNum(it)) }),
-	ADD_TO_BOX_VALUE("""^add \[[0-9]+\]""", { Command.AddToBoxValue(getBoxValueNum(it)) }),
-	SUB_TO_BOX("""^sub [0-9]+""", { Command.SubToBox(getBoxNum(it)) }),
-	SUB_TO_BOX_VALUE("""^sub \[[0-9]+\]""", { Command.SubToBoxValue(getBoxValueNum(it)) }),
-	INCREMENT("""^(bumpup|inc) [0-9]+""", { Command.Increment(getBoxNum(it)) }),
-	DECREMENT("""^(bumpdn|dec) [0-9]+""", { Command.Decrement(getBoxNum(it)) }),
+	COPY_TO_BOX("""^copyto $DIGIT""", { Command.CopyToBox(getBoxNum(it)) }),
+	COPY_TO_BOX_VALUE("""^copyto \[$DIGIT\]""", { Command.CopyToBoxValue(getBoxValueNum(it)) }),
+	COPY_FROM_BOX("""^copyfrom $DIGIT""", { Command.CopyFromBox(getBoxNum(it)) }),
+	COPY_FROM_BOX_VALUE("""^copyfrom \[$DIGIT\]""", { Command.CopyFromBoxValue(getBoxValueNum(it)) }),
+	ADD_TO_BOX("""^add $DIGIT""", { Command.AddToBox(getBoxNum(it)) }),
+	ADD_TO_BOX_VALUE("""^add \[$DIGIT\]""", { Command.AddToBoxValue(getBoxValueNum(it)) }),
+	SUB_TO_BOX("""^sub $DIGIT""", { Command.SubToBox(getBoxNum(it)) }),
+	SUB_TO_BOX_VALUE("""^sub \[$DIGIT\]""", { Command.SubToBoxValue(getBoxValueNum(it)) }),
+	INCREMENT("""^(bumpup|inc) $DIGIT""", { Command.Increment(getBoxNum(it)) }),
+	DECREMENT("""^(bumpdn|dec) $DIGIT""", { Command.Decrement(getBoxNum(it)) }),
 	JUMP("""^jump .+""", { Command.Jump(getArg(it)) }),
 	JUMP_IF_NEGATIVE("""^jumpn .+""", { Command.JumpIfNegative(getArg(it)) }),
 	JUMP_IF_ZERO("""^jumpz .+""", { Command.JumpIfZero(getArg(it)) }),
 	
 	// expanding upon the default human resource machine instructions
-	LOAD("""^load (-?[0-9]+|\D|'.')""", { Command.Load(getDataNum(it)) }),
-	JUMP_IF_EQUAL("""^jumpeq [0-9]+ .+""", { Command.JumpIfEqual(getBoxNum(it), getArg(it, index = 2)) }),
+	LOAD("""^load $VALUE""", { Command.Load(getDataNum(it)) }),
+	JUMP_IF_EQUAL("""^jumpeq $DIGIT .+""", { Command.JumpIfEqual(getBoxNum(it), getArg(it, index = 2)) }),
 	CRASH("""^crash""", { Command.Crash() });
 	
 }
 
 private val dataRegex = """'.'""".toRegex(RegexOption.IGNORE_CASE)
 internal fun getArg(str: String, index: Int = 1) = str.split(" ")[index]
-internal fun getBoxNum(str: String, index: Int = 1) = getArg(str, index).toInt()
-internal fun getBoxValueNum(str: String, index: Int = 1) = getArg(str, index).replace("[", "").replace("]", "").toInt()
-internal fun getDataNum(str: String, index: Int = 1) = getArg(str, index).run {
-	ignoreAndGiven(
-			if (this.matches(dataRegex))
-				DataConverter.toData(this.toCharArray()[1])
-			else
-				DataConverter.toData(this.toCharArray()[0])
-	) {
-		this.toInt()
-	}
+internal fun getBoxNum(str: String, index: Int = 1) = getArg(str, index).toBasesInt()
+internal fun getBoxValueNum(str: String, index: Int = 1) = getArg(str, index).replace("[", "").replace("]", "").toBasesInt()
+internal fun getDataNum(str: String, index: Int = 1) = getArg(str, index).getHrmValue()
+
+fun String.getHrmValue() = ignoreAndGiven(
+		if (this.matches(dataRegex))
+			DataConverter.toData(this.toCharArray()[1])
+		else
+			DataConverter.toData(this.toCharArray()[0])
+) {
+	this.toBasesInt()
+}
+
+fun String.toBasesInt(): Int {
+	if (this.startsWith("-")) return -(this.substring(1, this.length).toBasesInt())
+	if (this.startsWith("0x")) return Integer.parseInt(this.substring(2, this.length), 16)
+	if (this.startsWith("0b")) return Integer.parseInt(this.substring(2, this.length), 2)
+	return this.toInt()
 }
 
 fun parseProgram(str: String, error: (String) -> Unit = {}): Program {
