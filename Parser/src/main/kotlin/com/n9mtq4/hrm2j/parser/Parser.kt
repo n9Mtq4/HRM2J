@@ -92,7 +92,7 @@ fun parseProgram(str: String, error: (String) -> Unit = {}): Program {
 	sectionList.add(Section(sectionName, commands))
 	
 	// lets wrap it up in a nice program
-	val program =  Program(sectionList)
+	val program = Program(sectionList)
 	
 	postProgramCheck(program, error)
 	
