@@ -113,11 +113,27 @@ fun parseProgram(str: String, error: (String) -> Unit = {}): Program {
 
 private fun postProgramCheck(program: Program, error: (String) -> Unit = {}) {
 	
+	// make sure all labels are present
 	program.sections.flatMap { it.commands }.filter { it is Label }.forEach { 
 		it as Label
 		val index = program.sectionIndexOf(it.label)
 		if (index == -1) error("No label '${it.label}' in this program!")
 	}
+	
+	// spaces in labels will cause spaces in method names when compiling to java.
+	program.sections.forEach { 
+		val old = it.label
+		if (old.contains(" ")) {
+			val new = old.replace(" ", "__")
+			error("The label '$old' contains a space, changing the name to '$new'.")
+			it.label = new
+		}
+	}
+	program.sections.
+			map { it.label }.
+			filter { it.contains(" ") }.
+			forEach {
+			}
 	
 }
 

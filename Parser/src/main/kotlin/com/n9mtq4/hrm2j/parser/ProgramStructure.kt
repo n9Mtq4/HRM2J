@@ -40,7 +40,7 @@ interface Value {
 	val value: Int
 }
 
-data class Section(val label: String, val commands: List<Command>)
+data class Section(var label: String, val commands: List<Command>)
 data class Program(val sections: List<Section>)
 
 fun Program.sectionIndexOf(label: String): Int {
