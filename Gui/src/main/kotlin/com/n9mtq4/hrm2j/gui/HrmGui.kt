@@ -200,8 +200,12 @@ class HrmGui {
 		val interpreter = Interpreter(program, parseInboxValues(), parseFloorSize(), parseFloorValues(), parseOutboxSize())
 		interpreter.run()
 		
-		val out = interpreter.toString()
-		output.append(out)
+		try {
+			val out = interpreter.toString()
+			output.append(out)
+		}catch (e: Throwable) {
+			stackTrace.append(e.toText())
+		}
 		
 		stackTrace.append(interpreter.stackTrace?.toText())
 		
