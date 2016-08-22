@@ -39,6 +39,9 @@ interface Label {
 interface Value {
 	val value: Int
 }
+interface StringValue {
+	val stringValue: String
+}
 
 data class Section(var label: String, val commands: List<Command>)
 data class Program(val sections: List<Section>)

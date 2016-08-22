@@ -10,7 +10,7 @@ import com.n9mtq4.hrm2j.parser.sectionIndexOf
  *
  * @author Will "n9Mtq4" Bresnahan
  */
-class Interpreter(val program: Program, inboxValues: IntArray, floorSize: Int, floorValues: IntArray, outboxSize: Int, val printStackTrace: Boolean = true) {
+class Interpreter(val program: Program, inboxValues: IntArray, floorSize: Int, floorValues: IntArray, outboxSize: Int, val printStackTrace: Boolean = true, val errorPrinting: (String) -> Unit = {}) {
 	
 	val inbox: IntArray = inboxValues
 	var inboxIndex = 0
@@ -69,6 +69,7 @@ class Interpreter(val program: Program, inboxValues: IntArray, floorSize: Int, f
 				is Command.Load -> { hand = it.value }
 				is Command.JumpIfEqual -> { if (hand == floor[it.pointer]) { runSection(program.sectionIndexOf(it.label)); return } }
 				is Command.Crash -> { throw RuntimeException("crash command") } // if true fools the compiler to not give a unreachable code error
+				else -> errorPrinting("Unknown Command")
 			}
 		}
 		if (index == program.sections.size - 1) return
