@@ -129,11 +129,6 @@ private fun postProgramCheck(program: Program, error: (String) -> Unit = {}) {
 			it.label = new
 		}
 	}
-	program.sections.
-			map { it.label }.
-			filter { it.contains(" ") }.
-			forEach {
-			}
 	
 }
 
